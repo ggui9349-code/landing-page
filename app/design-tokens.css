@@ -1,0 +1,17 @@
+:root {
+  --blue: #125fd6;
+  --blue-dark: #10233f;
+  --blue-soft: #eaf2ff;
+  --off-white: #f7f8fa;
+  --ink: #171a20;
+  --graphite: #4d5562;
+  --line: #e4e7ec;
+  --white: #ffffff;
+  --material-gray: #aab4c2;
+  --font-display: var(--font-inter), Arial, sans-serif;
+  --font-body: var(--font-inter), Arial, sans-serif;
+  --font-data: var(--font-manrope), Arial, sans-serif;
+  --content-width: 1200px;
+  --section-space: clamp(5.5rem, 9vw, 9rem);
+  --ease-structural: cubic-bezier(0.22, 1, 0.36, 1);
+}
