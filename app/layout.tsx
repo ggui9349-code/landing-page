@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Inter, Manrope } from "next/font/google";
 import { siteConfig, websiteStructuredData } from "@/lib/seo";
 import { SiteAnalyticsTracker } from "@/components/ui/site-analytics";
@@ -114,6 +115,17 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteStructuredData()) }}
         />
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="wl-google-analytics" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', { send_page_view: false });`}
+            </Script>
+          </>
+        ) : null}
       </head>
       <body
         className={`${inter.variable} ${manrope.variable}`}

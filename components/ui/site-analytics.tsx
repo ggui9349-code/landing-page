@@ -161,7 +161,12 @@ export function emitSiteAnalytics(detail: AnalyticsEventDetail) {
 }
 
 function loadGoogleAnalytics() {
-  if (!GA_MEASUREMENT_ID || document.querySelector("script[data-wl-ga4]")) {
+  if (
+    !GA_MEASUREMENT_ID ||
+    window.gtag ||
+    document.querySelector("script[data-wl-ga4]") ||
+    document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"]`)
+  ) {
     return;
   }
 
