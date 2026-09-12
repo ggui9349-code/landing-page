@@ -5,6 +5,8 @@ import Script from "next/script";
 import { siteConfig } from "@/lib/seo";
 import "./globals.css";
 
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-91H1L6NX23";
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -111,17 +113,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+      {
         <head>
           <Script
             async
-            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
           />
           <Script id="google-analytics">
-            {`window.dataLayer = window.dataLayer || []; function gtag(){window.dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');`}
+            {`window.dataLayer = window.dataLayer || []; function gtag(){window.dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${GA_MEASUREMENT_ID}');`}
           </Script>
         </head>
-      ) : null}
+      }
       <body className={`${inter.variable} ${manrope.variable}`}>
         {children}
       </body>
