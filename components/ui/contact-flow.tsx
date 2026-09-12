@@ -12,11 +12,6 @@ import {
   type ReactNode,
 } from "react";
 import { emitSiteAnalytics } from "@/components/ui/site-analytics";
-import {
-  buildMagneticWhatsappMessage,
-  normalizePhoneDigits,
-  validateOptionalBrazilianPhone,
-} from "@/lib/contact-flow-message.mjs";
 
 interface ContactFlowContextValue {
   openContactFlow: (trigger: HTMLButtonElement, source: string) => void;
@@ -26,6 +21,17 @@ type ContactStep = "form" | "ready";
 type CopyState = "idle" | "copied" | "error";
 
 const ContactFlowContext = createContext<ContactFlowContextValue | null>(null);
+const BRAZILIAN_AREA_CODE = /^(?:1[1-9]|2[12478]|3[1-578]|4[1-9]|5[1345]|6[1-9]|7[134579]|8[1-9]|9[1-9])$/;
+
+function normalizePhoneDigits(value: string) {
+  let digits = value.replace(/\D/g, "");
+
+  if (digits.startsWith("55") && digits.length > 11) {
+    digits = digits.slice(2);
+  }
+
+  return digits.slice(0, 11);
+}
 
 function formatBrazilianPhone(value: string) {
   const digits = normalizePhoneDigits(value);
@@ -46,6 +52,22 @@ function formatBrazilianPhone(value: string) {
   const lastBlock = localNumber.slice(firstBlockLength, firstBlockLength + 4);
 
   return `(${areaCode}) ${firstBlock}${lastBlock ? `-${lastBlock}` : ""}`;
+}
+
+function isValidBrazilianPhone(value: string) {
+  const digits = normalizePhoneDigits(value);
+  const areaCode = digits.slice(0, 2);
+  const localNumber = digits.slice(2);
+
+  if (!BRAZILIAN_AREA_CODE.test(areaCode)) {
+    return false;
+  }
+
+  if (digits.length === 11) {
+    return /^9\d{8}$/.test(localNumber);
+  }
+
+  return digits.length === 10 && /^[2-9]\d{7}$/.test(localNumber);
 }
 
 function copyWithFallback(text: string) {
@@ -77,7 +99,6 @@ export function ContactFlowProvider({
   const [copyState, setCopyState] = useState<CopyState>("idle");
   const [preparedMessage, setPreparedMessage] = useState("");
   const [whatsappHref, setWhatsappHref] = useState("");
-  const [privacyConsent, setPrivacyConsent] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const readyHeadingRef = useRef<HTMLHeadingElement>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -87,7 +108,6 @@ export function ContactFlowProvider({
   const openContactFlow = useCallback((trigger: HTMLButtonElement, source: string) => {
     triggerRef.current = trigger;
     sourceRef.current = source;
-    setPrivacyConsent(false);
     setIsOpen(true);
   }, []);
 
@@ -96,7 +116,6 @@ export function ContactFlowProvider({
     setStep("form");
     setOpenFailed(false);
     setCopyState("idle");
-    setPrivacyConsent(false);
     submitGuardRef.current = false;
   }, []);
 
@@ -144,7 +163,9 @@ export function ContactFlowProvider({
 
   function handlePhoneInvalid(event: FormEvent<HTMLInputElement>) {
     event.currentTarget.setCustomValidity(
-      validateOptionalBrazilianPhone(event.currentTarget.value) ?? "",
+      isValidBrazilianPhone(event.currentTarget.value)
+        ? ""
+        : "Digite um WhatsApp com DDD, por exemplo: (81) 99999-9999.",
     );
   }
 
@@ -184,24 +205,29 @@ export function ContactFlowProvider({
       "phone",
     ) as HTMLInputElement | null;
 
-    const phoneError = validateOptionalBrazilianPhone(phone);
-    if (phoneError) {
-      phoneInput?.setCustomValidity(phoneError);
+    if (!isValidBrazilianPhone(phone)) {
+      phoneInput?.setCustomValidity(
+        "Digite um WhatsApp com DDD, por exemplo: (81) 99999-9999.",
+      );
       phoneInput?.reportValidity();
       phoneInput?.focus();
       return;
     }
 
     submitGuardRef.current = true;
-    const message = buildMagneticWhatsappMessage({
-      name,
-      size,
-      problem,
-      phone,
-      city,
-      time,
-      details,
-    });
+    const message = [
+      "Olá, vim pelo site da WL e gostaria de enviar fotos para uma avaliação inicial.",
+      "",
+      `Nome: ${name}`,
+      `Telefone: ${phone}`,
+      `Tamanho do colchão: ${size}`,
+      `Principal problema: ${problem}`,
+      city ? `Cidade: ${city}` : "",
+      time ? `Percebo o problema há: ${time}` : "",
+      details ? `Outras informações: ${details}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
     const nextWhatsappHref = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
 
     setPreparedMessage(message);
@@ -308,7 +334,7 @@ export function ContactFlowProvider({
           </button>
 
           <div className="contact-dialog-heading">
-            <p>{step === "ready" ? "Mensagem preparada" : "Reforma magnética"}</p>
+            <p>{step === "ready" ? "Mensagem preparada" : "Avaliação personalizada"}</p>
             <h2
               id="contact-dialog-title"
               ref={readyHeadingRef}
@@ -344,6 +370,29 @@ export function ContactFlowProvider({
                   placeholder="Seu nome"
                   required
                 />
+              </div>
+
+              <div className="contact-field">
+                <label htmlFor="contact-phone">
+                  WhatsApp <span aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="contact-phone"
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  minLength={14}
+                  maxLength={15}
+                  placeholder="(81) 99999-9999"
+                  aria-describedby="contact-phone-hint"
+                  onChange={handlePhoneChange}
+                  onInvalid={handlePhoneInvalid}
+                  required
+                />
+                <span className="contact-field-hint" id="contact-phone-hint">
+                  Inclua o DDD.
+                </span>
               </div>
 
               <div className="contact-field">
@@ -385,34 +434,11 @@ export function ContactFlowProvider({
                   <option>Outro</option>
                 </select>
               </div>
-
-              <div className="contact-field">
-                <label htmlFor="contact-phone">
-                  WhatsApp <span aria-hidden="true">*</span>
-                </label>
-                <input
-                  id="contact-phone"
-                  name="phone"
-                  required
-                  type="tel"
-                  autoComplete="tel"
-                  inputMode="tel"
-                  minLength={14}
-                  maxLength={15}
-                  placeholder="(81) 99999-9999"
-                  aria-describedby="contact-phone-hint"
-                  onChange={handlePhoneChange}
-                  onInvalid={handlePhoneInvalid}
-                />
-                <span className="contact-field-hint" id="contact-phone-hint">
-                  Informe o número com DDD para receber o atendimento.
-                </span>
-              </div>
             </div>
 
             <details className="contact-optional">
               <summary>
-                Adicionar cidade, horário e outros detalhes <span>Opcional</span>
+                Adicionar cidade e outros detalhes <span>Opcional</span>
               </summary>
               <div className="contact-optional-grid">
                 <div className="contact-field">
@@ -433,14 +459,16 @@ export function ContactFlowProvider({
 
                 <div className="contact-field">
                   <label htmlFor="contact-time">
-                    Melhor horário <span>(opcional)</span>
+                    Há quanto tempo? <span>(opcional)</span>
                   </label>
                   <select id="contact-time" name="time" defaultValue="">
                     <option value="">Selecione se desejar</option>
-                    <option>Manhã</option>
-                    <option>Tarde</option>
-                    <option>Noite</option>
-                    <option>Qualquer horário</option>
+                    <option>Menos de um mês</option>
+                    <option>De um a três meses</option>
+                    <option>De três a seis meses</option>
+                    <option>De seis meses a um ano</option>
+                    <option>Mais de um ano</option>
+                    <option>Não sei informar</option>
                   </select>
                 </div>
 
@@ -459,42 +487,8 @@ export function ContactFlowProvider({
               </div>
             </details>
 
-            <div className="contact-consent">
-              <input
-                id="contact-privacy-consent"
-                name="privacyConsent"
-                type="checkbox"
-                autoComplete="off"
-                checked={privacyConsent}
-                required
-                onChange={(event) => {
-                  setPrivacyConsent(event.currentTarget.checked);
-                  event.currentTarget.setCustomValidity("");
-                }}
-                onInvalid={(event) =>
-                  event.currentTarget.setCustomValidity(
-                    "Marque esta caixa para concordar com a Política de Privacidade.",
-                  )
-                }
-              />
-              <div>
-                <span>
-                  <label htmlFor="contact-privacy-consent">Concordo com a </label>
-                  <a
-                    href="/politica-de-privacidade"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Política de Privacidade
-                  </a>
-                  .
-                </span>
-                <small>Obrigatório para continuar com a avaliação.</small>
-              </div>
-            </div>
-
             <button type="submit" className="contact-submit">
-              <span>Enviar fotos para avaliação</span>
+              <span>Continuar pelo WhatsApp</span>
               <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M4 10h12M11 5l5 5-5 5"
@@ -539,7 +533,6 @@ export function ContactFlowProvider({
                 <a
                   className="contact-submit"
                   href={whatsappHref}
-                  data-analytics-managed="true"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => {
@@ -582,7 +575,6 @@ export function ContactFlowProvider({
                 </button>
                 <a
                   href={`https://wa.me/${whatsappPhone}`}
-                  data-analytics-managed="true"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => {

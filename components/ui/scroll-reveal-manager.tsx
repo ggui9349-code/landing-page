@@ -23,14 +23,6 @@ export function ScrollRevealManager() {
         : 0;
 
       element.style.setProperty("--reveal-delay", `${safeDelay}ms`);
-      const bounds = element.getBoundingClientRect();
-      const isInitiallyVisible =
-        bounds.bottom > 0 && bounds.top < window.innerHeight * 0.92;
-
-      if (isInitiallyVisible) {
-        element.classList.add("is-visible");
-      }
-
       element.classList.add("reveal-ready");
     });
 
@@ -51,9 +43,7 @@ export function ScrollRevealManager() {
       },
     );
 
-    elements
-      .filter((element) => !element.classList.contains("is-visible"))
-      .forEach((element) => observer.observe(element));
+    elements.forEach((element) => observer.observe(element));
 
     return () => observer.disconnect();
   }, []);

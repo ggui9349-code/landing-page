@@ -4,13 +4,13 @@ import test from "node:test";
 
 const projectRoot = new URL("../", import.meta.url);
 
-async function render(pathname = "/") {
+async function render() {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request(`https://wl-colchoes.test${pathname}`, {
+    new Request("https://wl-colchoes.test/", {
       headers: { accept: "text/html", host: "wl-colchoes.test" },
     }),
     {
@@ -35,314 +35,79 @@ test("server-renders the WL Colchões landing page", async () => {
     html,
     /<title>Reforma de Colchões em Recife, Olinda e Paulista \| WL Colchões<\/title>/i,
   );
-  assert.match(
-    html,
-    /Seu colchão magnético perdeu o conforto\?[\s\S]{0,80}<span>A WL reforma para você voltar a dormir bem\.<\/span>/,
-  );
-  assert.match(html, /Seu colchão pode voltar melhor que novo\./);
-  assert.match(html, /Mais de 20 anos conhecendo colchões por dentro\./);
-
-  for (const copy of [
-    "O desconforto aparece antes de o desgaste ficar visível.",
-    "Demora para encontrar uma posição confortável",
-    "Acorda com sensação de pouco descanso",
-    "Percebe afundamento ou diferença de firmeza",
-    "Sentir essa diferença não significa que você precisa comprar outro.",
-  ]) {
-    assert.match(html, new RegExp(copy.replace(/[.?]/g, "\\$&")));
-  }
-
-  const orderedMilestones = [
-    'id="inicio"',
-    'id="equipe"',
-    'id="sinais"',
-    'id="possibilidade"',
-    'id="camadas-magneticas"',
-    'id="resultados"',
-    'id="depoimentos"',
-    'id="como-funciona"',
-    'id="garantia"',
-    'id="duvidas"',
-  ];
-  let previousIndex = -1;
-  for (const milestone of orderedMilestones) {
-    const currentIndex = html.indexOf(milestone);
-    assert.ok(currentIndex > previousIndex, `${milestone} is out of funnel order`);
-    previousIndex = currentIndex;
-  }
-
-  const heroIndex = html.indexOf('id="inicio"');
-  const authorityIndex = html.indexOf('id="equipe"');
-  assert.ok(heroIndex >= 0);
-  assert.ok(authorityIndex > heroIndex);
-  assert.match(html, /\/images\/magnetic-mattress-hero\.png/);
-  assert.match(html, /6 meses de garantia/);
-  assert.match(html, /Entrega em até 3 dias/);
-  assert.match(html, /a reforma recupera o colchão por camadas\./);
-  assert.match(
-    html,
-    /define somente o que precisa ser recuperado\./,
-  );
-  assert.match(html, /Sustentação recuperada/);
-  assert.match(html, /Conforto renovado/);
-  assert.match(html, /Acabamento refeito/);
-  assert.match(html, /Ímãs, controle e massagem/);
-  assert.doesNotMatch(html, /Magnético, sem fórmula pronta/);
-  assert.doesNotMatch(html, /comparativo-sustentacao-colchao/);
-  assert.doesNotMatch(html, /Ilustração educativa|alinhamento varia conforme corpo/);
-  assert.match(html, /\/images\/colchao-magnetico-camadas-v3\.png/);
-  assert.match(
-    html,
-    /<h3>Controle e massagem entram quando fazem sentido para o projeto\.<\/h3>/,
-  );
-  assert.match(html, /Controle e massagem entram quando fazem sentido/);
-  assert.match(html, /\/images\/controle-ativita-relax\.png/);
-  assert.match(html, /tudo começa com algumas fotos\./);
-  assert.match(html, /Você entende o serviço e o orçamento antes de decidir\./);
-  assert.match(html, /o resultado aparece por fora\./);
-  assert.match(html, /Veja uma reforma real realizada pela WL em Olinda\./);
-  assert.doesNotMatch(
-    html,
-    /Antes e depois de uma reforma realizada pela WL em Olinda\./,
-  );
-  assert.match(html, /Recuperado sem uma troca desnecessária\./);
-  assert.match(html, /Antes de decidir, você sabe exatamente o que esperar\./);
-  assert.match(html, /O que falta saber antes de enviar as fotos\?/);
-  assert.match(html, /Todo colchão magnético pode ser reformado\?/);
-  assert.match(html, /Seu colchão pode voltar melhor que novo\./);
-  assert.match(html, /Você não precisa autorizar nada antes de entender/);
-  assert.doesNotMatch(
-    html,
-    /\bcura\b|tratamento magnético|melhora a circulação|alivia dores|trata dores/i,
-  );
-
-  const processMarkup = html.match(
-    /<ol class="renovation-process__path"[^>]*>([\s\S]*?)<\/ol>/,
-  )?.[1];
-  assert.ok(processMarkup);
-  assert.equal((processMarkup.match(/<li/g) ?? []).length, 3);
-  for (const step of [
-    "Mostre o que mudou",
-    "Entenda a recomendação",
-    "Aprove e receba",
-  ]) {
-    assert.match(processMarkup, new RegExp(step));
-  }
-
-  const guaranteeMarkup = html.match(
-    /<section[^>]+class="section guarantee"[\s\S]*?<\/section>/,
-  )?.[0];
-  assert.ok(guaranteeMarkup);
-  assert.equal((guaranteeMarkup.match(/<dt/g) ?? []).length, 3);
-  assert.match(
-    guaranteeMarkup,
-    /Antes de decidir, você sabe exatamente o que esperar\./,
-  );
-  assert.match(
-    guaranteeMarkup,
-    /Serviço indicado, orçamento, prazo e condições de garantia/,
-  );
-  assert.match(guaranteeMarkup, /6 meses de garantia/);
-  assert.match(guaranteeMarkup, /Entrega em até 3 dias/);
-  assert.match(guaranteeMarkup, /Atendimento regional/);
-
+  assert.match(html, /Seu colchão afundou, deformou ou começou a incomodar/);
+  assert.match(html, /Avaliação antes da decisão/);
+  assert.match(html, /Mais de 20 anos de experiência/);
+  assert.match(html, /Três cuidados fazem toda a diferença/);
+  assert.match(html, /Trocar ou reformar\? Primeiro, entenda o seu caso/);
+  assert.match(html, /É por dentro que a gente encontra a causa/);
+  assert.match(html, /Camada de proteção/);
+  assert.match(html, /colchao-camadas-v2\.webp/);
+  assert.match(html, /Veja a transformação de perto/);
+  assert.match(html, /Atendimento WL em Olinda/);
+  assert.match(html, /transformacao-antes-depois\.webp/);
+  assert.match(html, /Reproduzir vídeo da transformação com som/);
+  assert.match(html, /Quem já reformou conta como foi/);
+  assert.match(html, /Antes de comprar outro colchão/);
+  assert.match(html, /Ver resultados/);
   assert.match(html, /Conte para a gente o que está acontecendo/);
   assert.match(html, /Tamanho do colchão/);
-  assert.match(html, /Melhor horário/);
-  assert.match(
-    html,
-    /<input[^>]+(?:id="contact-privacy-consent"[^>]+type="checkbox"|type="checkbox"[^>]+id="contact-privacy-consent")[^>]+required/i,
-  );
-  assert.match(
-    html,
-    /<a[^>]+href="\/politica-de-privacidade"[^>]+target="_blank"[^>]*>\s*Política de Privacidade\s*<\/a>/i,
-  );
+  assert.match(html, /Há quanto tempo\?/);
+  assert.match(html, /Continuar pelo WhatsApp/);
   assert.match(html, /Washington/);
+  assert.match(html, /Fundador e Diretor Técnico/);
   assert.match(html, /Guilherme/);
+  assert.match(html, /Cofundador e Diretor de Atendimento/);
+  assert.match(html, /responsável pelas avaliações técnicas da WL/);
+  assert.doesNotMatch(html, /Exibir retrato colorido/);
+  assert.match(html, /Sua aprovação vem primeiro/);
+  assert.match(html, /Reformar colchão é só um remendo/);
+  assert.match(html, /Avaliar meu colchão/);
+  assert.doesNotMatch(html, /role="tablist"|role="tab"|aria-selected/);
+  for (const section of [
+    "historia",
+    "metodo",
+    "como-funciona",
+    "resultados",
+    "duvidas",
+  ]) {
+    assert.match(html, new RegExp(`href="#${section}"`));
+  }
+  assert.match(html, /aria-controls="mobile-navigation-panel"/);
+  assert.match(html, /aria-label="Atalhos da página"/);
+  assert.match(html, /Como funciona/);
+  assert.match(html, /Paulista, Olinda, Recife e Região Metropolitana/);
+  assert.match(html, /aria-label="Diferenciais da WL Colchões"/);
+  assert.doesNotMatch(html, /class="differential-card is-active"/);
+  assert.equal(
+    (html.match(/class="differential-card"/g) ?? []).length,
+    3,
+  );
+  assert.equal((html.match(/class="pillar-card"/g) ?? []).length, 3);
+  const journeyMarkup = html.match(
+    /<ol class="journey-list">([\s\S]*?)<\/ol>/,
+  )?.[1];
+  assert.ok(journeyMarkup);
+  assert.equal((journeyMarkup.match(/<li/g) ?? []).length, 4);
+  assert.doesNotMatch(html, /Cliente WL<\/strong><span>Cliente WL<\/span>/);
+  assert.match(html, /Maria/);
+  assert.match(html, /\/proof\/avaliacao-maria\.png/);
+  assert.doesNotMatch(html, /\/proof\/avaliacao-nota-dez\.webp/);
+  assert.match(html, /Avaliações reais recebidas depois do serviço/);
+  assert.match(html, /aria-haspopup="dialog"/);
+  assert.doesNotMatch(html, /final-phone/);
+  assert.doesNotMatch(html, /<meta[^>]+name="keywords"/i);
   assert.match(html, /application\/ld\+json/);
-  assert.match(html, /<link[^>]+rel="canonical"[^>]+href="https:\/\/wl-colchoes-site\.vercel\.app\//i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|SkeletonPreview/);
 });
 
-test("renders social preview metadata in the document head", async () => {
-  const response = await render();
-  const html = await response.text();
-
-  assert.match(html, /<meta[^>]+property="og:type"[^>]+content="website"/i);
-  assert.match(html, /<meta[^>]+property="og:url"[^>]+content="https:\/\/wl-colchoes\.test\//i);
-  assert.match(html, /<meta[^>]+property="og:image"[^>]+content="https:\/\/wl-colchoes\.test\/og\.png"/i);
-  assert.match(html, /<meta[^>]+name="twitter:card"[^>]+content="summary_large_image"/i);
-});
-
-test("serves crawl directives and sitemap as public XML/text routes", async () => {
-  const [robotsResponse, sitemapResponse] = await Promise.all([
-    render("/robots.txt"),
-    render("/sitemap.xml"),
-  ]);
-  const robots = await robotsResponse.text();
-  const sitemap = await sitemapResponse.text();
-
-  assert.equal(robotsResponse.status, 200);
-  assert.match(robotsResponse.headers.get("content-type") ?? "", /text\/plain/i);
-  assert.match(robots, /User-agent: \*/i);
-  assert.match(robots, /Allow: \/$/im);
-  assert.match(robots, /Sitemap: https:\/\/wl-colchoes\.test\/sitemap\.xml/i);
-  assert.equal(sitemapResponse.status, 200);
-  assert.match(sitemapResponse.headers.get("content-type") ?? "", /xml/i);
-  assert.match(sitemap, /<loc>https:\/\/wl-colchoes\.test\/(?:<\/loc>)/i);
-  assert.match(sitemap, /<loc>https:\/\/wl-colchoes\.test\/politica-de-privacidade<\/loc>/i);
-});
-
-test("keeps all primary offer facts inside the magnetic hero", async () => {
-  const response = await render();
-  const html = await response.text();
-
-  const heroMarkup = html.match(/<section[^>]+id="inicio"[\s\S]*?<\/section>/)?.[0];
-  assert.ok(heroMarkup);
-  for (const fact of [
-    "Reforma magnética",
-    "Entrega em até 3 dias",
-    "6 meses de garantia",
-  ]) {
-    assert.match(heroMarkup, new RegExp(fact));
-  }
-});
-
-test("places real WhatsApp testimonials after the transformation proof", async () => {
-  const response = await render();
-  const html = await response.text();
-
-  const transformationIndex = html.indexOf('id="resultados"');
-  const testimonialsIndex = html.indexOf('id="depoimentos"');
-  const processIndex = html.indexOf('id="como-funciona"');
-  assert.ok(transformationIndex >= 0);
-  assert.ok(testimonialsIndex > transformationIndex);
-  assert.ok(processIndex > testimonialsIndex);
-
-  const testimonialsMarkup = html.match(
-    /<section[^>]+class="section testimonials"[\s\S]*?<\/section>/,
-  )?.[0];
-  assert.ok(testimonialsMarkup);
-  assert.equal(
-    (testimonialsMarkup.match(/<li class="testimonials__item/g) ?? []).length,
-    4,
-  );
-  assert.match(testimonialsMarkup, /Depois da entrega, os clientes contam como ficou\./);
-  assert.match(
-    testimonialsMarkup,
-    /Mensagens reais enviadas à WL depois da reforma\./,
-  );
-  assert.match(
-    testimonialsMarkup,
-    /<ul[^>]+class="testimonials__list"[^>]+tabindex="0"/i,
-  );
-  for (const client of ["Levinaldo", "Veronica", "Eduardo", "Maria"]) {
-    assert.match(testimonialsMarkup, new RegExp(client));
-  }
-  for (const asset of [
-    "avaliacao-levinaldo.webp",
-    "avaliacao-veronica.webp",
-    "avaliacao-eduardo.webp",
-    "avaliacao-maria.png",
-  ]) {
-    assert.match(testimonialsMarkup, new RegExp(asset.replace(".", "\\.")));
-  }
-});
-
-test("lets visitors control the moving testimonials rail", async () => {
-  const response = await render();
-  const html = await response.text();
-  const testimonialsMarkup = html.match(
-    /<section[^>]+class="section testimonials"[\s\S]*?<\/section>/,
-  )?.[0];
-
-  assert.ok(testimonialsMarkup);
-  assert.match(testimonialsMarkup, /aria-label="Depoimento anterior"/);
-  assert.match(testimonialsMarkup, /aria-label="Pausar depoimentos"/);
-  assert.match(testimonialsMarkup, /aria-label="Próximo depoimento"/);
-  assert.match(testimonialsMarkup, /aria-live="off"/);
-});
-
-test("keeps the landing concise and navigation focused on decisions", async () => {
-  const response = await render();
-  const html = await response.text();
-
-  const mainMarkup = html.match(/<main[^>]*>[\s\S]*?<\/main>/)?.[0];
-  assert.ok(mainMarkup);
-
-  const desktopNavigation = html.match(
-    /<nav class="desktop-nav"[\s\S]*?<\/nav>/,
-  )?.[0];
-  assert.ok(desktopNavigation);
-  assert.equal((desktopNavigation.match(/<a\b/g) ?? []).length, 3);
-  assert.match(desktopNavigation, />Como funciona</);
-  assert.match(desktopNavigation, />Resultados</);
-  assert.match(desktopNavigation, />Quem somos</);
-  assert.doesNotMatch(desktopNavigation, />Problemas</);
-  assert.doesNotMatch(desktopNavigation, />Sinais</);
-  assert.match(html, /<a href="#resultados">Resultados<\/a>/);
-
-  for (const removedSection of [
-    "titulo-comparacao",
-    "historia",
-    "diferenciais",
-  ]) {
-    assert.doesNotMatch(mainMarkup, new RegExp(`id="${removedSection}"`));
-  }
-
-  const faqMarkup = html.match(
-    /<section[^>]+class="section renovation-faq"[\s\S]*?<\/section>/,
-  )?.[0];
-  assert.ok(faqMarkup);
-  assert.equal((faqMarkup.match(/<details/g) ?? []).length, 4);
-  assert.doesNotMatch(mainMarkup, /class="container-scroll"/);
-});
-
-test("guides the visitor from support to reform, proof and decision", async () => {
-  const response = await render();
-  const html = await response.text();
-  const orderedMilestones = [
-    'id="camadas-magneticas"',
-    'id="resultados"',
-    'id="depoimentos"',
-    'id="como-funciona"',
-    'id="garantia"',
-    'id="duvidas"',
-  ];
-
-  let previousIndex = -1;
-  for (const milestone of orderedMilestones) {
-    const currentIndex = html.indexOf(milestone);
-    assert.ok(currentIndex > previousIndex, `${milestone} is out of narrative order`);
-    previousIndex = currentIndex;
-  }
-  assert.match(html, /Quando necessário/);
-  assert.match(html, /A avaliação vem primeiro/);
-  assert.match(html, /Você entende o serviço e o orçamento antes de decidir\./);
-});
-
-test("publishes a concise privacy policy for WL contact requests", async () => {
-  const response = await render("/politica-de-privacidade");
-  assert.equal(response.status, 200);
-
-  const html = await response.text();
-  assert.match(html, /<title>Política de Privacidade \| WL Colchões<\/title>/i);
-  assert.match(html, /Quais dados podemos receber/);
-  assert.match(html, /Como usamos seus dados/);
-  assert.match(html, /WhatsApp/);
-  assert.match(html, /Seus direitos pela LGPD/);
-  assert.match(html, /558187514699|81 8751-4699/);
-  assert.doesNotMatch(html, /G4 Educação|análise de crédito|marketing direto/i);
-});
-
-test("preserves production, form, SEO and motion contracts", async () => {
+test("preserves the production structure without decorative UI traps", async () => {
   const [
     page,
-    globals,
-    designTokens,
+    styles,
     contactFlow,
-    contactFlowLogic,
     interactions,
+    teamShowcase,
     scrollReveal,
     layout,
     seo,
@@ -350,142 +115,140 @@ test("preserves production, form, SEO and motion contracts", async () => {
     sitemap,
     manifest,
     packageJson,
-  ] = await Promise.all([
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
-    readFile(new URL("../app/design-tokens.css", import.meta.url), "utf8"),
-    readFile(new URL("../components/ui/contact-flow.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../lib/contact-flow-message.mjs", import.meta.url), "utf8"),
-    readFile(new URL("../app/interactive-sections.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../components/ui/scroll-reveal-manager.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../lib/seo.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/robots.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/sitemap.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/manifest.ts", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-  ]);
-  const styles = `${designTokens}\n${globals}`;
-  const motionSections = await Promise.all([
-    readFile(new URL("../components/sections/sleep-signals.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../components/sections/magnetic-layers.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../components/sections/testimonials.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../components/sections/process.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../components/sections/guarantee.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../components/sections/faq.tsx", import.meta.url), "utf8"),
-  ]);
-  const [sleepSignals, magneticLayers, testimonials, process, guarantee, faq] =
-    motionSections;
+  ] =
+    await Promise.all([
+      readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+      readFile(
+        new URL("../components/ui/contact-flow.tsx", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../app/interactive-sections.tsx", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../components/ui/team-showcase.tsx", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../components/ui/scroll-reveal-manager.tsx", import.meta.url),
+        "utf8",
+      ),
+      readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../lib/seo.ts", import.meta.url), "utf8"),
+      readFile(new URL("../app/robots.ts", import.meta.url), "utf8"),
+      readFile(new URL("../app/sitemap.ts", import.meta.url), "utf8"),
+      readFile(new URL("../app/manifest.ts", import.meta.url), "utf8"),
+      readFile(new URL("../package.json", import.meta.url), "utf8"),
+    ]);
 
   assert.match(page, /aria-label="WL Colchões, início"/);
   assert.match(page, /LocalBusiness/);
+  assert.match(page, /HomeAndConstructionBusiness/);
   assert.match(page, /FAQPage/);
   assert.match(page, /BreadcrumbList/);
-  assert.match(page, /<ScrollRevealManager\s*\/>/);
-  assert.doesNotMatch(page, /PainSignals|HistoryPillars|DifferentialsGrid/);
-  assert.doesNotMatch(page, /ContainerScroll|SiteAnalyticsTracker/);
-  assert.match(styles, /--blue:\s*#125fd6/i);
-  assert.match(styles, /--blue-dark:\s*#10233f/i);
-  assert.match(styles, /--blue-soft:\s*#eaf2ff/i);
-  assert.match(styles, /--off-white:\s*#f7f8fa/i);
-  assert.match(styles, /--ink:\s*#171a20/i);
-  assert.match(styles, /--graphite:\s*#4d5562/i);
-  assert.match(styles, /\.authority__layout\s*\{/);
-  assert.match(styles, /\.sleep-signals__layout\s*\{/);
-  assert.match(styles, /\.recovery-turn__shell\s*\{/);
-  assert.match(styles, /\.testimonials__list\s*\{/);
-  assert.match(
-    styles,
-    /\.guarantee\s*\{[^}]*background:\s*var\(--blue-dark\)[^}]*color:\s*var\(--white\)/,
-  );
-  assert.match(
-    styles,
-    /\.guarantee__facts\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/,
-  );
-  assert.match(
-    styles,
-    /\.testimonials__list:focus-visible\s*\{[^}]*outline:\s*[^;]*var\(--blue\)/,
-  );
-  assert.match(globals, /html\s*\{[^}]*overflow-x:\s*clip[\s\S]*body\s*\{[^}]*overflow-x:\s*clip[\s\S]*main\s*\{[^}]*overflow-x:\s*clip/);
-  assert.doesNotMatch(styles, /\.support-comparison(?:__|\s|\{)/);
-  assert.match(
-    styles,
-    /@media \(prefers-reduced-motion: reduce\)[\s\S]*animation-duration/,
-  );
-  assert.match(styles, /\.team-section\s*\{\s*overflow:\s*hidden/);
-  assert.match(styles, /\.authority__team h3\s*\{[^}]*color:\s*var\(--white\)/);
-  assert.match(styles, /\.authority__team p\s*\{[^}]*color:\s*var\(--blue-soft\)/);
-  assert.match(layout, /Inter/);
-  assert.match(layout, /Manrope/);
-
-  assert.match(contactFlow, /name="name"[\s\S]*required/);
-  assert.match(contactFlow, /name="size"[\s\S]*required/);
-  assert.match(contactFlow, /name="problem"[\s\S]*required/);
-  assert.match(contactFlow, /name="phone"[\s\S]{0,240}required/);
-  assert.match(contactFlow, /id="contact-privacy-consent"[\s\S]{0,260}checked=\{privacyConsent\}/);
-  assert.match(contactFlow, /buildMagneticWhatsappMessage/);
-  assert.match(contactFlowLogic, /isValidBrazilianPhone/);
-  assert.match(interactions, /export function SiteNavigation/);
-  assert.match(interactions, /export function MobileNavigation/);
-  assert.match(scrollReveal, /IntersectionObserver/);
-  assert.match(scrollReveal, /prefers-reduced-motion/);
-  assert.match(sleepSignals, /sleep-signals__list" data-reveal="right"/);
-  assert.match(magneticLayers, /mattress-blueprint__content" data-reveal="right"/);
-  assert.match(testimonials, /testimonials__list"[\s\S]*data-reveal="up"/);
-  assert.match(process, /renovation-process__path" data-reveal="up"/);
-  assert.match(guarantee, /guarantee__facts" data-reveal="right"/);
-  assert.match(faq, /renovation-faq__list" data-reveal="right"/);
-  for (const section of motionSections) {
-    assert.doesNotMatch(section, /data-reveal-delay/);
-    assert.doesNotMatch(section, /<li[^>]*data-reveal/);
-    assert.doesNotMatch(section, /<details[^>]*data-reveal/);
-  }
-  assert.match(layout, /generateMetadata/);
-  assert.match(layout, /SiteAnalyticsTracker/);
-  assert.match(seo, /NEXT_PUBLIC_SITE_URL/);
-  assert.match(seo, /https:\/\/wl-colchoes-site\.vercel\.app/);
-  assert.match(robots, /sitemap: absoluteUrl\("\/sitemap\.xml"\)/);
-  assert.match(sitemap, /changeFrequency: "weekly"/);
-  assert.match(manifest, /theme_color: "#10233f"/);
-  assert.doesNotMatch(packageJson, /react-loading-skeleton/);
-  assert.match(packageJson, /"framer-motion"/);
-
-  for (const asset of [
-    "../public/images/wl-logo.png",
-    "../public/images/colchao-magnetico-camadas-v3.png",
-    "../public/images/controle-ativita-relax.png",
-    "../public/results/transformacao-antes-depois.webp",
-    "../public/videos/transformacao-wl-olinda.mp4",
-    "../public/videos/transformacao-wl-olinda.vtt",
-    "../public/team/washington.webp",
-    "../public/team/guilherme.webp",
-  ]) {
-    await access(new URL(asset, import.meta.url));
-  }
-  await assert.rejects(
-    access(new URL("../public/images/comparativo-sustentacao-colchao.png", import.meta.url)),
-  );
-  await access(new URL("dist/server/index.js", projectRoot));
-});
-
-test("uses accessible primary action colors", async () => {
-  const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
-  assert.match(
-    styles,
-    /\.magnetic-hero__cta\s*\{[^}]*background:\s*var\(--blue\)[^}]*color:\s*var\(--white\)/,
-  );
-  assert.match(
-    styles,
-    /\.contact-submit\s*\{[^}]*background:\s*var\(--blue\)[^}]*color:\s*var\(--white\)/,
-  );
-});
-
-test("rejects legacy red and cream literals", async () => {
-  const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
-  assert.doesNotMatch(styles, /#e34228|#e8e7e2|#f7f5ef/i);
-  assert.doesNotMatch(styles, /#25d366|#9f2f2f/i);
+  assert.match(page, /absoluteUrl\("\/#negocio"\)/);
+  assert.match(page, /avaliacao-levinaldo\.webp/);
+  assert.match(page, /images\/wl-logo\.png/);
+  assert.ok((page.match(/images\/wl-logo\.png/g) ?? []).length >= 3);
+  assert.doesNotMatch(page, /marqueeItems|marquee-section|materials-strip/);
+  assert.doesNotMatch(page, /value-grid|final-limited|final-note/);
+  assert.match(page, /Washington: 20\+ anos de fábrica/);
+  assert.doesNotMatch(page, /ContainerScroll/);
+  assert.match(styles, /translate3d\(-50%, 0, 0\)/);
+  assert.doesNotMatch(styles, /marquee-group|@keyframes marquee/);
   assert.doesNotMatch(
     styles,
-    /var\(--tension-red\)|var\(--concrete\)|var\(--workshop-white\)/,
+    /@keyframes (?:area-radar-sweep|area-ring-rotate|area-center-pulse|area-city-signal|cta-neon-breathe)/,
   );
+  assert.match(styles, /@keyframes technical-layer-highlight/);
+  assert.match(styles, /\.team-portrait-image[\s\S]*grayscale\(1\)/);
+  const continuousAnimations =
+    styles.match(/animation:[^;]*\binfinite\b[^;]*;/g) ?? [];
+  assert.equal(continuousAnimations.length, 5);
+  continuousAnimations.forEach((animation) => {
+    assert.match(animation, /technical-|proof-carousel/);
+  });
+  assert.match(contactFlow, /https:\/\/wa\.me\/\$\{whatsappPhone\}/);
+  assert.match(contactFlow, /Tamanho do colchão/);
+  assert.match(contactFlow, /Olá, vim pelo site da WL/);
+  assert.match(contactFlow, /name="time"/);
+  assert.match(contactFlow, /Tudo pronto\. Agora envie a mensagem no WhatsApp/);
+  assert.match(contactFlow, /Abrir WhatsApp novamente/);
+  assert.match(contactFlow, /Copiar mensagem/);
+  assert.match(contactFlow, /isValidBrazilianPhone/);
+  assert.doesNotMatch(contactFlow, /\.reset\(|240/);
+  const citySelect = contactFlow.match(
+    /<select id="contact-city"[\s\S]*?<\/select>/,
+  )?.[0];
+  const timeSelect = contactFlow.match(
+    /<select id="contact-time"[\s\S]*?<\/select>/,
+  )?.[0];
+  assert.ok(citySelect);
+  assert.ok(timeSelect);
+  assert.doesNotMatch(citySelect, /required/);
+  assert.doesNotMatch(timeSelect, /required/);
+  assert.match(interactions, /IntersectionObserver/);
+  assert.match(interactions, /export function SiteNavigation/);
+  assert.match(interactions, /export function MobileNavigation/);
+  assert.match(interactions, /export function HistoryPillars/);
+  assert.match(interactions, /export function DifferentialsGrid/);
+  assert.doesNotMatch(interactions, /onMouseEnter|aria-pressed=\{isActive\}/);
+  assert.doesNotMatch(teamShowcase, /aria-pressed|<button/);
+  assert.match(scrollReveal, /IntersectionObserver/);
+  assert.match(scrollReveal, /prefers-reduced-motion/);
+  assert.match(scrollReveal, /observer\.unobserve/);
+  assert.match(layout, /generateMetadata/);
+  assert.match(layout, /siteConfig\.ogImage\.path/);
+  assert.match(layout, /applicationName/);
+  assert.match(layout, /manifest: "\/manifest\.webmanifest"/);
+  assert.match(layout, /favicon-16\.png/);
+  assert.match(layout, /favicon-32\.png/);
+  assert.match(layout, /apple-icon\.png/);
+  assert.match(layout, /max-image-preview/);
+  assert.match(layout, /geo\.region/);
+  assert.match(layout, /canonical:\s*"\/"/);
+  assert.doesNotMatch(layout, /keywords\s*:/);
+  assert.match(seo, /NEXT_PUBLIC_SITE_URL/);
+  assert.match(seo, /www\.wlcolchoes\.com\.br/);
+  assert.match(seo, /og\.png/);
+  assert.match(seo, /Reforma profissional de colchões/);
+  assert.doesNotMatch(seo, /keywords\s*:/);
+  assert.match(robots, /sitemap: absoluteUrl\("\/sitemap\.xml"\)/);
+  assert.match(robots, /allow: "\/"/);
+  assert.match(sitemap, /changeFrequency: "weekly"/);
+  assert.match(sitemap, /priority: 1/);
+  assert.match(manifest, /manifest\(\): MetadataRoute\.Manifest/);
+  assert.match(manifest, /theme_color: "#0b2f63"/);
+  assert.match(manifest, /icon-192\.png/);
+  assert.match(manifest, /icon-512\.png/);
+  assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+  assert.doesNotMatch(packageJson, /framer-motion/);
+
+  await assert.rejects(access(new URL("../app/_sites-preview", import.meta.url)));
+  await access(new URL("../public/images/colchao-aberto.webp", import.meta.url));
+  await access(
+    new URL("../public/images/colchao-camadas-v2.webp", import.meta.url),
+  );
+  await access(new URL("../public/images/wl-logo.png", import.meta.url));
+  await access(new URL("../public/favicon-16.png", import.meta.url));
+  await access(new URL("../public/favicon-32.png", import.meta.url));
+  await access(new URL("../public/icon-192.png", import.meta.url));
+  await access(new URL("../public/icon-512.png", import.meta.url));
+  await access(new URL("../public/apple-icon.png", import.meta.url));
+  await access(new URL("../public/og.png", import.meta.url));
+  await access(new URL("../public/team/washington.webp", import.meta.url));
+  await access(new URL("../public/team/guilherme.webp", import.meta.url));
+  await access(new URL("../public/proof/avaliacao-maria.png", import.meta.url));
+  await access(
+    new URL("../public/results/transformacao-antes-depois.webp", import.meta.url),
+  );
+  await access(
+    new URL("../public/videos/transformacao-wl-olinda.mp4", import.meta.url),
+  );
+  await access(
+    new URL("../public/videos/transformacao-wl-olinda.vtt", import.meta.url),
+  );
+  await access(new URL("dist/server/index.js", projectRoot));
 });

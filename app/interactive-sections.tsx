@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -26,15 +28,27 @@ export type Differential = {
   text: string;
 };
 
+type ResultItem = {
+  src: string;
+  alt: string;
+  label: string;
+  result: string;
+  width: number;
+  height: number;
+  variant?: "chat-snippets";
+};
+
 type NavigationItem = {
   id: string;
   label: string;
 };
 
 const navigationItems: NavigationItem[] = [
+  { id: "historia", label: "Nossa história" },
+  { id: "metodo", label: "Método WL" },
   { id: "como-funciona", label: "Como funciona" },
   { id: "resultados", label: "Resultados" },
-  { id: "equipe", label: "Quem somos" },
+  { id: "duvidas", label: "Dúvidas" },
 ];
 
 function useActiveSection() {
@@ -291,6 +305,110 @@ export function TransformationVideo() {
           <span>Ver transformação com som</span>
         </button>
       ) : null}
+    </div>
+  );
+}
+
+export function ResultCarousel({ items }: { items: ResultItem[] }) {
+  const [isPaused, setIsPaused] = useState(false);
+
+  return (
+    <div
+      className={`proof-carousel${isPaused ? " is-paused" : ""}`}
+      role="region"
+      aria-roledescription="carrossel"
+      aria-label="Avaliações de clientes em movimento automático"
+      aria-live="off"
+      data-reveal="image"
+    >
+      <button
+        className="proof-carousel-control"
+        type="button"
+        aria-label={
+          isPaused
+            ? "Continuar carrossel de avaliações"
+            : "Pausar carrossel de avaliações"
+        }
+        aria-pressed={isPaused}
+        onClick={() => setIsPaused((paused) => !paused)}
+      >
+        <span aria-hidden="true">{isPaused ? "▶" : "Ⅱ"}</span>
+      </button>
+
+      <div className="proof-track">
+        {[false, true].map((isDuplicate) => (
+          <div
+            className="proof-group"
+            role={isDuplicate ? undefined : "list"}
+            aria-hidden={isDuplicate || undefined}
+            key={isDuplicate ? "duplicate" : "primary"}
+          >
+            {items.map((proof) => (
+              <article
+                className="proof-card"
+                role={isDuplicate ? undefined : "listitem"}
+                key={`${isDuplicate ? "duplicate" : "primary"}-${proof.src}`}
+              >
+                <div
+                  className={`proof-image${
+                    proof.variant === "chat-snippets"
+                      ? " is-chat-snippets"
+                      : ""
+                  }`}
+                >
+                  {proof.variant === "chat-snippets" ? (
+                    <div
+                      className="proof-chat-snippets"
+                      role={isDuplicate ? undefined : "img"}
+                      aria-label={isDuplicate ? undefined : proof.alt}
+                    >
+                      <span
+                        className="proof-chat-crop is-greeting"
+                        aria-hidden="true"
+                      >
+                        <img
+                          src={proof.src}
+                          alt=""
+                          width={proof.width}
+                          height={proof.height}
+                          loading="lazy"
+                        />
+                      </span>
+                      <span
+                        className="proof-chat-crop is-reply"
+                        aria-hidden="true"
+                      >
+                        <img
+                          src={proof.src}
+                          alt=""
+                          width={proof.width}
+                          height={proof.height}
+                          loading="lazy"
+                        />
+                      </span>
+                    </div>
+                  ) : (
+                    <img
+                      src={proof.src}
+                      alt={isDuplicate ? "" : proof.alt}
+                      width={proof.width}
+                      height={proof.height}
+                      loading="lazy"
+                    />
+                  )}
+                </div>
+                <div className="proof-meta">
+                  <div>
+                    <strong>{proof.label}</strong>
+                    {proof.label !== "Cliente WL" ? <span>Cliente WL</span> : null}
+                  </div>
+                  <span className="proof-rating">{proof.result}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

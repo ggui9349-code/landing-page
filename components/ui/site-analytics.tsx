@@ -9,14 +9,6 @@ const SUPABASE_ANON_KEY =
 const VISITOR_ID_KEY = "wl:visitor-id";
 const SESSION_ID_KEY = "wl:site-session-id";
 const SESSION_STARTED_KEY = "wl:site-session-started-at";
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-
-declare global {
-  interface Window {
-    dataLayer?: unknown[];
-    gtag?: (...args: unknown[]) => void;
-  }
-}
 
 type AnalyticsMetadata = Record<string, string | number | boolean | null>;
 
@@ -160,43 +152,6 @@ export function emitSiteAnalytics(detail: AnalyticsEventDetail) {
   window.dispatchEvent(new CustomEvent("wl:analytics", { detail }));
 }
 
-function loadGoogleAnalytics() {
-  if (
-    !GA_MEASUREMENT_ID ||
-    window.gtag ||
-    document.querySelector("script[data-wl-ga4]") ||
-    document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"]`)
-  ) {
-    return;
-  }
-
-  window.dataLayer = window.dataLayer ?? [];
-  window.gtag = window.gtag ?? ((...args: unknown[]) => {
-    window.dataLayer?.push(args);
-  });
-  window.gtag("js", new Date());
-  window.gtag("config", GA_MEASUREMENT_ID, { send_page_view: false });
-
-  const script = document.createElement("script");
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA_MEASUREMENT_ID)}`;
-  script.dataset.wlGa4 = "true";
-  document.head.appendChild(script);
-}
-
-function sendGoogleAnalyticsEvent(detail: AnalyticsEventDetail) {
-  if (!GA_MEASUREMENT_ID || !window.gtag) {
-    return;
-  }
-
-  window.gtag("event", detail.eventName, {
-    event_label: detail.eventLabel,
-    cta_source: detail.ctaSource,
-    section_id: detail.sectionId,
-    ...detail.metadata,
-  });
-}
-
 export function SiteAnalyticsTracker() {
   const startedAtRef = useRef(0);
   const readyRef = useRef<Promise<void> | null>(null);
@@ -206,8 +161,6 @@ export function SiteAnalyticsTracker() {
     if (hasDoNotTrackEnabled()) {
       return undefined;
     }
-
-    loadGoogleAnalytics();
 
     const startedAt = Number(getStorageValue(sessionStorage, SESSION_STARTED_KEY)) || Date.now();
     const visitorId = getOrCreateStorageId(localStorage, VISITOR_ID_KEY);
@@ -245,8 +198,6 @@ export function SiteAnalyticsTracker() {
       if (!ids || !detail.eventName) {
         return;
       }
-
-      sendGoogleAnalyticsEvent(detail);
 
       void (async () => {
         await readyRef.current;
@@ -325,11 +276,12 @@ export function SiteAnalyticsTracker() {
       );
 
       if (whatsappLink) {
-        if (whatsappLink.dataset.analyticsManaged === "true") {
-          return;
-        }
-
         const source = whatsappLink.dataset.ctaSource || "footer-whatsapp";
+        recordEvent({
+          eventName: "cta_click",
+          eventLabel: getTextLabel(whatsappLink) ?? "WhatsApp",
+          ctaSource: source,
+        });
         recordEvent({
           eventName: "whatsapp_open",
           eventLabel: "WhatsApp direto",

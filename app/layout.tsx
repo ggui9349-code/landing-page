@@ -1,21 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { Inter, Manrope } from "next/font/google";
-import { siteConfig, websiteStructuredData } from "@/lib/seo";
-import { SiteAnalyticsTracker } from "@/components/ui/site-analytics";
-import "./design-tokens.css";
+import { headers } from "next/headers";
+import Script from "next/script";
+import { siteConfig } from "@/lib/seo";
 import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
-  weight: ["400", "500", "600", "700", "800"],
   subsets: ["latin"],
   display: "swap",
 });
 
 const manrope = Manrope({
   variable: "--font-manrope",
-  weight: ["600", "700"],
   subsets: ["latin"],
   display: "swap",
 });
@@ -24,12 +21,17 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#10233f",
+  themeColor: "#0b2f63",
   colorScheme: "light",
 };
 
-export function generateMetadata(): Metadata {
-  const metadataBase = new URL(siteConfig.url);
+export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+  const protocol =
+    requestHeaders.get("x-forwarded-proto") ??
+    (host?.startsWith("localhost") ? "http" : "https");
+  const metadataBase = new URL(host ? `${protocol}://${host}` : siteConfig.url);
   const socialImage = new URL(siteConfig.ogImage.path, metadataBase);
 
   return {
@@ -40,7 +42,6 @@ export function generateMetadata(): Metadata {
       template: `%s | ${siteConfig.name}`,
     },
     description: siteConfig.description,
-    keywords: siteConfig.keywords,
     authors: [{ name: siteConfig.name }],
     creator: siteConfig.name,
     publisher: siteConfig.name,
@@ -110,27 +111,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteStructuredData()) }}
-        />
-        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="wl-google-analytics" strategy="afterInteractive">
-              {`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', { send_page_view: false });`}
-            </Script>
-          </>
-        ) : null}
-      </head>
-      <body
-        className={`${inter.variable} ${manrope.variable}`}
-      >
-        <SiteAnalyticsTracker />
+      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+        <head>
+          <Script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+          />
+          <Script id="google-analytics">
+            {`window.dataLayer = window.dataLayer || []; function gtag(){window.dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');`}
+          </Script>
+        </head>
+      ) : null}
+      <body className={`${inter.variable} ${manrope.variable}`}>
         {children}
       </body>
     </html>
