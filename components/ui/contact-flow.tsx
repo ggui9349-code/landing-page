@@ -108,6 +108,11 @@ export function ContactFlowProvider({
   const openContactFlow = useCallback((trigger: HTMLButtonElement, source: string) => {
     triggerRef.current = trigger;
     sourceRef.current = source;
+    emitSiteAnalytics({
+      eventName: "contact_flow_start",
+      eventLabel: "Entrar em contato",
+      ctaSource: source,
+    });
     setIsOpen(true);
   }, []);
 

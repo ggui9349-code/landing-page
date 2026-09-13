@@ -163,8 +163,17 @@ export function emitSiteAnalytics(detail: AnalyticsEventDetail) {
   }
 
   if (detail.eventName === "contact_form_submit") {
-    window.fbq?.("track", "Lead", {
+    window.fbq?.("track", "Purchase", {
       content_name: detail.eventLabel ?? "Formulário de avaliação",
+      content_category: "lead",
+      value: 1,
+      currency: "BRL",
+    });
+  }
+
+  if (detail.eventName === "contact_flow_start") {
+    window.fbq?.("track", "InitiateCheckout", {
+      content_name: detail.eventLabel ?? "Entrar em contato",
       content_category: "lead",
     });
   }
