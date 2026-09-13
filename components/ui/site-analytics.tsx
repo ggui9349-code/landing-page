@@ -12,6 +12,12 @@ const SESSION_STARTED_KEY = "wl:site-session-started-at";
 
 type AnalyticsMetadata = Record<string, string | number | boolean | null>;
 
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+  }
+}
+
 interface AnalyticsEventDetail {
   eventName: string;
   eventLabel?: string;
@@ -147,6 +153,20 @@ async function sendRest(table: string, payload: unknown, options: RestOptions = 
 export function emitSiteAnalytics(detail: AnalyticsEventDetail) {
   if (typeof window === "undefined") {
     return;
+  }
+
+  if (detail.eventName === "whatsapp_open") {
+    window.fbq?.("track", "Contact", {
+      content_name: detail.eventLabel ?? "WhatsApp",
+      content_category: "lead",
+    });
+  }
+
+  if (detail.eventName === "contact_form_submit") {
+    window.fbq?.("track", "Lead", {
+      content_name: detail.eventLabel ?? "Formulário de avaliação",
+      content_category: "lead",
+    });
   }
 
   window.dispatchEvent(new CustomEvent("wl:analytics", { detail }));
