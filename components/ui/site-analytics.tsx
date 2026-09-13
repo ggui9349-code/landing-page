@@ -155,25 +155,16 @@ export function emitSiteAnalytics(detail: AnalyticsEventDetail) {
     return;
   }
 
-  if (detail.eventName === "whatsapp_open") {
+  if (detail.eventName === "contact_flow_start") {
     window.fbq?.("track", "Contact", {
-      content_name: detail.eventLabel ?? "WhatsApp",
+      content_name: detail.eventLabel ?? "Entrar em contato",
       content_category: "lead",
     });
   }
 
   if (detail.eventName === "contact_form_submit") {
-    window.fbq?.("track", "Purchase", {
+    window.fbq?.("track", "Lead", {
       content_name: detail.eventLabel ?? "Formulário de avaliação",
-      content_category: "lead",
-      value: 1,
-      currency: "BRL",
-    });
-  }
-
-  if (detail.eventName === "contact_flow_start") {
-    window.fbq?.("track", "InitiateCheckout", {
-      content_name: detail.eventLabel ?? "Entrar em contato",
       content_category: "lead",
     });
   }
