@@ -6,7 +6,7 @@ import { siteConfig } from "@/lib/seo";
 import "./globals.css";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-91H1L6NX23";
-const META_PIXEL_ID = "712490391806172";
+const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? process.env.META_PIXEL_ID ?? "712490391806172";
 
 const inter = Inter({
   variable: "--font-inter",

@@ -1,23 +1,43 @@
 export const faqItems = [
   {
-    question: "Todo colchão magnético pode ser reformado?",
+    question: "Todo colchão pode ser reformado?",
     answer:
-      "Não. A WL avalia estrutura, tamanho, espumas e componentes antes de indicar a reforma.",
+      "Nem sempre. A WL avalia a estrutura, as espumas, as molas, o revestimento e o estado geral antes de indicar se a reforma é segura e faz sentido.",
+  },
+  {
+    question: "Quanto custa reformar um colchão?",
+    answer:
+      "O valor depende do tamanho, do desgaste e dos materiais necessários. A WL apresenta o orçamento depois da avaliação e antes de qualquer serviço.",
+  },
+  {
+    question: "Vale a pena reformar ou comprar outro?",
+    answer:
+      "Depende do estado real do colchão. Quando a estrutura permite recuperação, reformar pode fazer sentido; quando o desgaste é extenso, a troca pode ser mais indicada.",
+  },
+  {
+    question: "É possível avaliar pelas fotos?",
+    answer:
+      "As fotos permitem uma avaliação inicial da condição visível. Se forem necessários mais detalhes, a WL explica quais informações faltam antes de recomendar o serviço.",
+  },
+  {
+    question: "Reforma de colchão é apenas um remendo?",
+    answer:
+      "Não. A reforma pode envolver espuma, sustentação, molas, revestimento, tecido e acabamento. O serviço é definido conforme o que realmente precisa de intervenção.",
+  },
+  {
+    question: "Vocês atendem Recife, Olinda e Paulista?",
+    answer:
+      "Sim. A WL atende Recife, Olinda, Paulista e outras cidades da Região Metropolitana do Recife, conforme disponibilidade para o endereço.",
   },
   {
     question: "Como o orçamento é definido?",
     answer:
-      "O valor depende do estado, tamanho, materiais e componentes necessários. Você recebe o orçamento antes de autorizar.",
+      "O orçamento considera o tamanho, a condição do colchão, os materiais e os recursos necessários. Você recebe a explicação e o valor antes de aprovar.",
   },
   {
-    question: "Controle e massagem estão sempre incluídos?",
+    question: "Vocês reformam colchão com espuma deformada?",
     answer:
-      "Não. A WL revisa ou instala esses componentes somente quando necessário e depois da sua aprovação.",
-  },
-  {
-    question: "Quais cidades são atendidas?",
-    answer:
-      "A WL atende Recife, Paulista, Olinda e outras localidades da Região Metropolitana.",
+      "A espuma deformada é um dos pontos avaliados. A WL verifica a extensão do desgaste e explica se é possível recuperar, substituir apenas uma camada ou se a troca é mais adequada.",
   },
 ] as const;
 
