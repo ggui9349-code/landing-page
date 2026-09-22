@@ -20,19 +20,19 @@ export const siteConfig = {
     process.env.VERCEL_PROJECT_PRODUCTION_URL ??
     process.env.VERCEL_URL,
   ),
-  title: "Reforma de Colchões em Recife, Olinda e Paulista | WL Colchões",
+  title: "Reforma de Colchões em Recife | WL Colchões",
   shortTitle: "Reforma de Colchões | WL Colchões",
   description:
-    "Reforma profissional de colchões em Recife, Olinda, Paulista e Região Metropolitana. Envie fotos pelo WhatsApp e descubra se seu colchão pode ser recuperado.",
+    "Reforma profissional de colchões em Recife, com atendimento em Olinda, Paulista e Região Metropolitana. Envie fotos pelo WhatsApp e descubra se seu colchão pode ser recuperado.",
   socialDescription:
     "Seu colchão afundou, deformou ou perdeu o conforto? Envie fotos para uma avaliação inicial pelo WhatsApp.",
   whatsappPhone: "+55 81 8751-4699",
   whatsappDigits: "558187514699",
   locale: "pt_BR",
   areaServed: [
-    "Paulista",
-    "Olinda",
     "Recife",
+    "Olinda",
+    "Paulista",
     "Região Metropolitana do Recife",
   ],
   ogImage: {
