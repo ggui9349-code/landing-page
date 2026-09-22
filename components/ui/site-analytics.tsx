@@ -15,6 +15,7 @@ type AnalyticsMetadata = Record<string, string | number | boolean | null>;
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
@@ -153,6 +154,30 @@ async function sendRest(table: string, payload: unknown, options: RestOptions = 
 export function emitSiteAnalytics(detail: AnalyticsEventDetail) {
   if (typeof window === "undefined") {
     return;
+  }
+
+  if (detail.eventName === "contact_flow_start") {
+    window.gtag?.("event", "contact", {
+      event_category: "lead",
+      event_label: detail.eventLabel ?? "Entrar em contato",
+      cta_source: detail.ctaSource ?? "sem-origem",
+    });
+  }
+
+  if (detail.eventName === "contact_form_submit") {
+    window.gtag?.("event", "generate_lead", {
+      event_category: "lead",
+      event_label: detail.eventLabel ?? "Formulário de avaliação",
+      cta_source: detail.ctaSource ?? "sem-origem",
+    });
+  }
+
+  if (detail.eventName === "whatsapp_open") {
+    window.gtag?.("event", "whatsapp_open", {
+      event_category: "lead",
+      event_label: detail.eventLabel ?? "WhatsApp",
+      cta_source: detail.ctaSource ?? "sem-origem",
+    });
   }
 
   if (detail.eventName === "contact_flow_start") {
