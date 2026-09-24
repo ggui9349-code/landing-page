@@ -180,18 +180,12 @@ export function emitSiteAnalytics(detail: AnalyticsEventDetail) {
     });
   }
 
-  if (detail.eventName === "contact_flow_start") {
-    window.fbq?.("track", "Contact", {
-      content_name: detail.eventLabel ?? "Entrar em contato",
-      content_category: "lead",
-    });
-  }
-
-  if (detail.eventName === "contact_form_submit") {
-    window.fbq?.("track", "Lead", {
-      content_name: detail.eventLabel ?? "Formulário de avaliação",
-      content_category: "lead",
-    });
+  if (
+    detail.eventName === "whatsapp_open" ||
+    detail.eventName === "whatsapp_retry" ||
+    detail.eventName === "whatsapp_blank_click"
+  ) {
+    window.fbq?.("track", "Contact");
   }
 
   window.dispatchEvent(new CustomEvent("wl:analytics", { detail }));
@@ -303,21 +297,12 @@ export function SiteAnalyticsTracker() {
       const dialog = target?.closest(".contact-dialog");
       const ctaElement = target?.closest<HTMLElement>("[data-cta-source]");
 
-      if (ctaElement) {
-        recordEvent({
-          eventName: "cta_click",
-          eventLabel: getTextLabel(ctaElement) ?? undefined,
-          ctaSource: ctaElement.dataset.ctaSource || "sem-origem",
-        });
-        return;
-      }
-
       if (dialog) {
         return;
       }
 
       const whatsappLink = target?.closest<HTMLAnchorElement>(
-        'a[href*="wa.me"], a[href*="api.whatsapp.com"]',
+        'a[href*="wa.me"], a[href*="api.whatsapp.com"], a[href^="tel:"]',
       );
 
       if (whatsappLink) {
@@ -327,10 +312,22 @@ export function SiteAnalyticsTracker() {
           eventLabel: getTextLabel(whatsappLink) ?? "WhatsApp",
           ctaSource: source,
         });
+        if (!whatsappLink.href.startsWith("tel:")) {
+          recordEvent({
+            eventName: "whatsapp_open",
+            eventLabel: "WhatsApp direto",
+            ctaSource: source,
+          });
+        }
+        window.fbq?.("track", "Contact");
+        return;
+      }
+
+      if (ctaElement) {
         recordEvent({
-          eventName: "whatsapp_open",
-          eventLabel: "WhatsApp direto",
-          ctaSource: source,
+          eventName: "cta_click",
+          eventLabel: getTextLabel(ctaElement) ?? undefined,
+          ctaSource: ctaElement.dataset.ctaSource || "sem-origem",
         });
       }
     };
